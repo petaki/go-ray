@@ -2,17 +2,17 @@ package ray
 
 // Ray type.
 type Ray struct {
-	client *Client
+	settings *Settings
 }
 
 // New function.
-func New(client *Client) *Ray {
+func New(settings *Settings) *Ray {
 	r := new(Ray)
 
-	if client != nil {
-		r.client = client
+	if settings != nil {
+		r.settings = settings
 	} else {
-		r.client = &Client{
+		r.settings = &Settings{
 			Host: "localhost",
 			Port: 23517,
 		}
