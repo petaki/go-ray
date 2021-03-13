@@ -25,7 +25,9 @@ const (
 
 // Color function.
 func (r *Ray) Color(color Color) *Ray {
-	return r.sendRequest(newColorPayload(color))
+	return r.sendRequest([]*payload{
+		newColorPayload(color),
+	}, nil)
 }
 
 // Green function.

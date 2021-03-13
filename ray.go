@@ -27,9 +27,10 @@ func New(settings *Settings) *Ray {
 		r.settings = settings
 	} else {
 		r.settings = &Settings{
-			Enable: true,
-			Host:   "localhost",
-			Port:   23517,
+			Enable:              true,
+			Host:                "localhost",
+			Port:                23517,
+			AlwaysSendRawValues: false,
 		}
 	}
 
@@ -76,12 +77,34 @@ func (r *Ray) Charles() *Ray {
 	return r.Send("🎶 🎹 🎷 🕺")
 }
 
-// Send function.
-func (r *Ray) Send(arguments ...interface{}) *Ray {
-	return r.sendRequest(newLogPayload(arguments))
+// Raw function.
+func (r *Ray) Raw(arguments ...interface{}) *Ray {
+	if len(arguments) == 0 {
+		return r
+	}
+
+	return r.sendRequest([]*payload{
+		newLogPayload(arguments...),
+	}, nil)
 }
 
-func (r *Ray) sendRequest(payloads ...*payload) *Ray {
+// Send function.
+func (r *Ray) Send(arguments ...interface{}) *Ray {
+	if len(arguments) == 0 {
+		return r
+	}
+
+	if r.settings.AlwaysSendRawValues {
+		return r.Raw(arguments...)
+	}
+
+	return r.sendRequest(
+		createPayloadsForValues(arguments...),
+		nil,
+	)
+}
+
+func (r *Ray) sendRequest(payloads []*payload, meta map[string]interface{}) *Ray {
 	if r.Disabled() {
 		return r
 	}
@@ -89,7 +112,7 @@ func (r *Ray) sendRequest(payloads ...*payload) *Ray {
 	data, _ := json.Marshal(map[string]interface{}{
 		"uuid":     r.uuid,
 		"payloads": payloads,
-		"meta":     []string{},
+		"meta":     meta,
 	})
 
 	resp, _ := r.client.Post(
