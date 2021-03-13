@@ -18,10 +18,10 @@ func (r *Ray) Size(size Size) *Ray {
 
 // Small function.
 func (r *Ray) Small() *Ray {
-	return r.sendRequest(newSizePayload(Small))
+	return r.Size(Small)
 }
 
 // Large function.
 func (r *Ray) Large() *Ray {
-	return r.sendRequest(newSizePayload(Large))
+	return r.Size(Large)
 }

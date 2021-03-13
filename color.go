@@ -30,30 +30,30 @@ func (r *Ray) Color(color Color) *Ray {
 
 // Green function.
 func (r *Ray) Green() *Ray {
-	return r.sendRequest(newColorPayload(Green))
+	return r.Color(Green)
 }
 
 // Orange function.
 func (r *Ray) Orange() *Ray {
-	return r.sendRequest(newColorPayload(Orange))
+	return r.Color(Orange)
 }
 
 // Red function.
 func (r *Ray) Red() *Ray {
-	return r.sendRequest(newColorPayload(Red))
+	return r.Color(Red)
 }
 
 // Purple function.
 func (r *Ray) Purple() *Ray {
-	return r.sendRequest(newColorPayload(Purple))
+	return r.Color(Purple)
 }
 
 // Blue function.
 func (r *Ray) Blue() *Ray {
-	return r.sendRequest(newColorPayload(Blue))
+	return r.Color(Blue)
 }
 
 // Gray function.
 func (r *Ray) Gray() *Ray {
-	return r.sendRequest(newColorPayload(Gray))
+	return r.Color(Gray)
 }
