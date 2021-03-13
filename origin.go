@@ -11,10 +11,10 @@ type origin struct {
 	Hostname   string `json:"hostname"`
 }
 
-func newOrigin() *origin {
+func newOrigin(skip int) *origin {
 	o := new(origin)
 
-	_, file, lineNumber, ok := runtime.Caller(4)
+	_, file, lineNumber, ok := runtime.Caller(skip)
 	if ok {
 		o.File = file
 		o.LineNumber = lineNumber

@@ -1,8 +1,6 @@
 package ray
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestNew(t *testing.T) {
 	tests := []struct {

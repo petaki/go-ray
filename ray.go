@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -13,6 +14,7 @@ import (
 type Ray struct {
 	uuid     string
 	settings *Settings
+	client   *http.Client
 	enabled  bool
 }
 
@@ -25,10 +27,15 @@ func New(settings *Settings) *Ray {
 		r.settings = settings
 	} else {
 		r.settings = &Settings{
-			Enable: true,
-			Host:   "localhost",
-			Port:   23517,
+			Enable:              true,
+			Host:                "localhost",
+			Port:                23517,
+			AlwaysSendRawValues: false,
 		}
+	}
+
+	r.client = &http.Client{
+		Timeout: 2 * time.Second,
 	}
 
 	r.enabled = r.settings.Enable
@@ -60,11 +67,6 @@ func (r *Ray) Disabled() bool {
 	return !r.enabled
 }
 
-// Color function.
-func (r *Ray) Color(color Color) *Ray {
-	return r.sendRequest(newColorPayload(color))
-}
-
 // Ban function.
 func (r *Ray) Ban() *Ray {
 	return r.Send("🕶")
@@ -75,12 +77,34 @@ func (r *Ray) Charles() *Ray {
 	return r.Send("🎶 🎹 🎷 🕺")
 }
 
-// Send function.
-func (r *Ray) Send(arguments ...interface{}) *Ray {
-	return r.sendRequest(newLogPayload(arguments))
+// Raw function.
+func (r *Ray) Raw(arguments ...interface{}) *Ray {
+	if len(arguments) == 0 {
+		return r
+	}
+
+	return r.sendRequest([]*payload{
+		newLogPayload(arguments...),
+	}, nil)
 }
 
-func (r *Ray) sendRequest(payloads ...*payload) *Ray {
+// Send function.
+func (r *Ray) Send(arguments ...interface{}) *Ray {
+	if len(arguments) == 0 {
+		return r
+	}
+
+	if r.settings.AlwaysSendRawValues {
+		return r.Raw(arguments...)
+	}
+
+	return r.sendRequest(
+		createPayloadsForValues(arguments...),
+		nil,
+	)
+}
+
+func (r *Ray) sendRequest(payloads []*payload, meta map[string]interface{}) *Ray {
 	if r.Disabled() {
 		return r
 	}
@@ -88,10 +112,10 @@ func (r *Ray) sendRequest(payloads ...*payload) *Ray {
 	data, _ := json.Marshal(map[string]interface{}{
 		"uuid":     r.uuid,
 		"payloads": payloads,
-		"meta":     []string{},
+		"meta":     meta,
 	})
 
-	resp, _ := http.Post(
+	resp, _ := r.client.Post(
 		fmt.Sprintf("http://%s:%d/", r.settings.Host, r.settings.Port),
 		"application/json",
 		bytes.NewBuffer(data),
