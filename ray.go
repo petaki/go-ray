@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -13,6 +14,7 @@ import (
 type Ray struct {
 	uuid     string
 	settings *Settings
+	client   *http.Client
 	enabled  bool
 }
 
@@ -29,6 +31,10 @@ func New(settings *Settings) *Ray {
 			Host:   "localhost",
 			Port:   23517,
 		}
+	}
+
+	r.client = &http.Client{
+		Timeout: 2 * time.Second,
 	}
 
 	r.enabled = r.settings.Enable
@@ -86,7 +92,7 @@ func (r *Ray) sendRequest(payloads ...*payload) *Ray {
 		"meta":     []string{},
 	})
 
-	resp, _ := http.Post(
+	resp, _ := r.client.Post(
 		fmt.Sprintf("http://%s:%d/", r.settings.Host, r.settings.Port),
 		"application/json",
 		bytes.NewBuffer(data),
