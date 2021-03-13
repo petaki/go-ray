@@ -5,6 +5,7 @@ type payloadType string
 const (
 	colorType payloadType = "color"
 	logType   payloadType = "log"
+	sizeType  payloadType = "size"
 )
 
 type payload struct {
@@ -19,7 +20,7 @@ func newColorPayload(color Color) *payload {
 		Content: map[string]interface{}{
 			"color": color,
 		},
-		Origin: newOrigin(),
+		Origin: newOrigin(4),
 	}
 }
 
@@ -29,6 +30,16 @@ func newLogPayload(values ...interface{}) *payload {
 		Content: map[string]interface{}{
 			"values": values,
 		},
-		Origin: newOrigin(),
+		Origin: newOrigin(4),
+	}
+}
+
+func newSizePayload(size Size) *payload {
+	return &payload{
+		Type: sizeType,
+		Content: map[string]interface{}{
+			"size": size,
+		},
+		Origin: newOrigin(4),
 	}
 }

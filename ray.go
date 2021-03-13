@@ -60,11 +60,6 @@ func (r *Ray) Disabled() bool {
 	return !r.enabled
 }
 
-// Color function.
-func (r *Ray) Color(color Color) *Ray {
-	return r.sendRequest(newColorPayload(color))
-}
-
 // Ban function.
 func (r *Ray) Ban() *Ray {
 	return r.Send("🕶")
