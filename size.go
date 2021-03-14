@@ -11,13 +11,6 @@ const (
 	Large Size = "lg"
 )
 
-// Size function.
-func (r *Ray) Size(size Size) *Ray {
-	return r.sendRequest([]*payload{
-		newSizePayload(size),
-	}, nil)
-}
-
 // Small function.
 func (r *Ray) Small() *Ray {
 	return r.Size(Small)

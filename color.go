@@ -23,13 +23,6 @@ const (
 	Gray Color = "gray"
 )
 
-// Color function.
-func (r *Ray) Color(color Color) *Ray {
-	return r.sendRequest([]*payload{
-		newColorPayload(color),
-	}, nil)
-}
-
 // Green function.
 func (r *Ray) Green() *Ray {
 	return r.Color(Green)

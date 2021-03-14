@@ -70,8 +70,48 @@ func (r *Ray) Disabled() bool {
 	return !r.enabled
 }
 
-// ToJson function.
-func (r *Ray) ToJson(arguments ...interface{}) *Ray {
+// NewScreen function.
+func (r *Ray) NewScreen(name string) *Ray {
+	return r.SendRequest([]*payload{newNewScreenPayload(name)}, nil)
+}
+
+// ClearAll function.
+func (r *Ray) ClearAll() *Ray {
+	return r.SendRequest([]*payload{newClearAllPayload()}, nil)
+}
+
+// ClearScreen function.
+func (r *Ray) ClearScreen() *Ray {
+	return r.NewScreen("")
+}
+
+// Color function.
+func (r *Ray) Color(color Color) *Ray {
+	return r.SendRequest([]*payload{newColorPayload(color)}, nil)
+}
+
+// Size function.
+func (r *Ray) Size(size Size) *Ray {
+	return r.SendRequest([]*payload{newSizePayload(size)}, nil)
+}
+
+// Remove function.
+func (r *Ray) Remove() *Ray {
+	return r.SendRequest([]*payload{newRemovePayload()}, nil)
+}
+
+// Hide function.
+func (r *Ray) Hide() *Ray {
+	return r.SendRequest([]*payload{newHidePayload()}, nil)
+}
+
+// Notify function.
+func (r *Ray) Notify(text string) *Ray {
+	return r.SendRequest([]*payload{newNotifyPayload(text)}, nil)
+}
+
+// ToJSON function.
+func (r *Ray) ToJSON(arguments ...interface{}) *Ray {
 	if len(arguments) == 0 {
 		return r
 	}
@@ -79,10 +119,15 @@ func (r *Ray) ToJson(arguments ...interface{}) *Ray {
 	payloads := make([]*payload, len(arguments))
 
 	for key, argument := range arguments {
-		payloads[key] = newJsonStringPayload(argument)
+		payloads[key] = newJSONStringPayload(argument)
 	}
 
-	return r.sendRequest(payloads, nil)
+	return r.SendRequest(payloads, nil)
+}
+
+// Time function.
+func (r *Ray) Time(t time.Time, format string) *Ray {
+	return r.SendRequest([]*payload{newTimePayload(t, format)}, nil)
 }
 
 // Ban function.
@@ -95,13 +140,23 @@ func (r *Ray) Charles() *Ray {
 	return r.Send("🎶 🎹 🎷 🕺")
 }
 
+// Table function.
+func (r *Ray) Table(values []interface{}, label string) *Ray {
+	return r.SendRequest([]*payload{newTableType(values, label)}, nil)
+}
+
+// HTML function.
+func (r *Ray) HTML(html string) *Ray {
+	return r.SendRequest([]*payload{newHTMLPayload(html)}, nil)
+}
+
 // Raw function.
 func (r *Ray) Raw(arguments ...interface{}) *Ray {
 	if len(arguments) == 0 {
 		return r
 	}
 
-	return r.sendRequest([]*payload{
+	return r.SendRequest([]*payload{
 		newLogPayload(arguments...),
 	}, nil)
 }
@@ -121,24 +176,45 @@ func (r *Ray) Send(arguments ...interface{}) *Ray {
 		return r.Raw(arguments...)
 	}
 
-	return r.sendRequest(
+	return r.SendRequest(
 		createPayloadsForValues(arguments...),
 		nil,
 	)
 }
 
+// Pass function.
 func (r *Ray) Pass(argument interface{}) interface{} {
 	r.Send(argument)
 
 	return argument
 }
 
-func (r *Ray) sendRequest(payloads []*payload, meta map[string]interface{}) *Ray {
+// ShowApp function.
+func (r *Ray) ShowApp() *Ray {
+	return r.SendRequest([]*payload{newShowAppPayload()}, nil)
+}
+
+// HideApp function.
+func (r *Ray) HideApp() *Ray {
+	return r.SendRequest([]*payload{newHideAppPayload()}, nil)
+}
+
+// SendCustom function.
+func (r *Ray) SendCustom(content, label string) *Ray {
+	return r.SendRequest([]*payload{newCustomPayload(content, label)}, nil)
+}
+
+// SendRequest function.
+func (r *Ray) SendRequest(payloads []*payload, meta map[string]interface{}) *Ray {
+	if payloads == nil {
+		return r
+	}
+
 	if r.Disabled() {
 		return r
 	}
 
-	for key, _ := range payloads {
+	for key := range payloads {
 		payloads[key].Origin = newOrigin(3)
 	}
 
