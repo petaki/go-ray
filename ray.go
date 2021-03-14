@@ -18,6 +18,9 @@ type Ray struct {
 	enabled  bool
 }
 
+// DefaultRay variable.
+var DefaultRay = New(nil)
+
 // New function.
 func New(settings *Settings) *Ray {
 	r := new(Ray)
@@ -103,6 +106,11 @@ func (r *Ray) Raw(arguments ...interface{}) *Ray {
 	}, nil)
 }
 
+// Send wrapper around DefaultRay.Send.
+func Send(arguments ...interface{}) *Ray {
+	return DefaultRay.Send(arguments...)
+}
+
 // Send function.
 func (r *Ray) Send(arguments ...interface{}) *Ray {
 	if len(arguments) == 0 {
@@ -117,6 +125,12 @@ func (r *Ray) Send(arguments ...interface{}) *Ray {
 		createPayloadsForValues(arguments...),
 		nil,
 	)
+}
+
+func (r *Ray) Pass(argument interface{}) interface{} {
+	r.Send(argument)
+
+	return argument
 }
 
 func (r *Ray) sendRequest(payloads []*payload, meta map[string]interface{}) *Ray {
