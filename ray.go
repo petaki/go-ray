@@ -67,6 +67,21 @@ func (r *Ray) Disabled() bool {
 	return !r.enabled
 }
 
+// ToJson function.
+func (r *Ray) ToJson(arguments ...interface{}) *Ray {
+	if len(arguments) == 0 {
+		return r
+	}
+
+	payloads := make([]*payload, len(arguments))
+
+	for key, argument := range arguments {
+		payloads[key] = newJsonStringPayload(argument)
+	}
+
+	return r.sendRequest(payloads, nil)
+}
+
 // Ban function.
 func (r *Ray) Ban() *Ray {
 	return r.Send("🕶")
@@ -107,6 +122,10 @@ func (r *Ray) Send(arguments ...interface{}) *Ray {
 func (r *Ray) sendRequest(payloads []*payload, meta map[string]interface{}) *Ray {
 	if r.Disabled() {
 		return r
+	}
+
+	for key, _ := range payloads {
+		payloads[key].Origin = newOrigin(3)
 	}
 
 	data, _ := json.Marshal(map[string]interface{}{
