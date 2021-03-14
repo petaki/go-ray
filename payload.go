@@ -1,6 +1,9 @@
 package ray
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type payloadType string
 
@@ -62,7 +65,13 @@ func newColorPayload(color Color) *payload {
 	}
 }
 
-func newLogPayload(values ...interface{}) *payload {
+func newLogPayload(arguments ...interface{}) *payload {
+	values := make([]interface{}, len(arguments))
+
+	for key, argument := range arguments {
+		values[key] = fmt.Sprintf("%+v", argument)
+	}
+
 	return &payload{
 		Type: logType,
 		Content: map[string]interface{}{
