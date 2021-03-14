@@ -1,15 +1,20 @@
 package ray
 
-import "time"
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+)
 
 type payloadType string
 
 const (
-	colorType  payloadType = "color"
-	customType payloadType = "custom"
-	logType    payloadType = "log"
-	timeType   payloadType = "carbon"
-	sizeType   payloadType = "size"
+	colorType      payloadType = "color"
+	customType     payloadType = "custom"
+	jsonStringType payloadType = "json_string"
+	logType        payloadType = "log"
+	timeType       payloadType = "carbon"
+	sizeType       payloadType = "size"
 )
 
 type payload struct {
@@ -19,21 +24,24 @@ type payload struct {
 }
 
 func createPayloadsForValues(values ...interface{}) []*payload {
-	var payloads []*payload
+	payloads := make([]*payload, len(values))
 
-	for _, value := range values {
+	for key, value := range values {
 		switch v := value.(type) {
 		case bool:
-			payloads = append(payloads, newBoolPayload(v))
+			payloads[key] = newBoolPayload(v)
 			continue
 		case time.Time:
-			payloads = append(payloads, newTimePayload(v, ""))
+			payloads[key] = newTimePayload(v, "")
+			continue
+		case map[string]interface{}:
+			payloads[key] = newJsonStringPayload(v)
 			continue
 		default:
 			if v == nil {
-				payloads = append(payloads, newNilPayload())
+				payloads[key] = newNilPayload()
 			} else {
-				payloads = append(payloads, newLogPayload(v))
+				payloads[key] = newLogPayload(v)
 			}
 		}
 	}
@@ -48,7 +56,6 @@ func newBoolPayload(value bool) *payload {
 			"content": value,
 			"label":   "Boolean",
 		},
-		Origin: newOrigin(4),
 	}
 }
 
@@ -58,17 +65,30 @@ func newColorPayload(color Color) *payload {
 		Content: map[string]interface{}{
 			"color": color,
 		},
-		Origin: newOrigin(4),
+	}
+}
+
+func newJsonStringPayload(value interface{}) *payload {
+	v, _ := json.Marshal(value)
+
+	return &payload{
+		Type: jsonStringType,
+		Content: map[string]interface{}{
+			"value": string(v),
+		},
 	}
 }
 
 func newLogPayload(values ...interface{}) *payload {
+	for key, value := range values {
+		values[key] = fmt.Sprintf("%+v", value)
+	}
+
 	return &payload{
 		Type: logType,
 		Content: map[string]interface{}{
 			"values": values,
 		},
-		Origin: newOrigin(4),
 	}
 }
 
@@ -79,7 +99,6 @@ func newNilPayload() *payload {
 			"content": nil,
 			"label":   "Nil",
 		},
-		Origin: newOrigin(4),
 	}
 }
 
@@ -89,7 +108,6 @@ func newSizePayload(size Size) *payload {
 		Content: map[string]interface{}{
 			"size": size,
 		},
-		Origin: newOrigin(4),
 	}
 }
 
@@ -107,6 +125,5 @@ func newTimePayload(t time.Time, format string) *payload {
 			"timestamp": t.Unix(),
 			"timezone":  timezone,
 		},
-		Origin: newOrigin(4),
 	}
 }
